@@ -76,7 +76,7 @@ class YoutubeDownloader(tk.Tk):
 		else:
 			video_url = pytube.YouTube(url)
 			video = video_url.streams.get_highest_resolution()
-			video.download()
+			video.download(filename=f"{video_url.title}.mp4".replace(":", ""))
 			self.video_title.config(text=f"Downloading...\n {video.title}", font=("Arial", 13))
 
 	def download_audio(self, url):
@@ -87,10 +87,10 @@ class YoutubeDownloader(tk.Tk):
 		else:
 			video_url = pytube.YouTube(url)
 			audio = video_url.streams.get_audio_only()
-			audio.download()
+			audio.download(filename=f"{video_url.title}.mp4".replace(":", ""))
 			self.video_title.config(text=f"Downloading...\n{audio.title}", font=("Arial", 13))
 
-			return video_url.title
+			return f"{video_url.title}".replace(":", "")
 
 	def get_keywords(self, url):
 		try:
@@ -104,9 +104,9 @@ class YoutubeDownloader(tk.Tk):
 			for keyword in video.keywords:
 				keywords_string += f"{keyword}\n"
 
-			keywords_file = open(f"keywords_{video.title}.txt", 'w')
+			keywords_file = open(f"keywords_{video.title}.txt".replace(":", ""), 'w')
 			keywords_file.write(keywords_string)
-			os.startfile(f"keywords_{video.title}.txt")
+			os.startfile(f"keywords_{video.title}.txt".replace(":", ""))
 
 	def cut_audio(self, url, start, stop):
 		video_title = self.download_audio(url)
