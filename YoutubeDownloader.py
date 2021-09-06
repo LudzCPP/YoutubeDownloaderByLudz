@@ -1,5 +1,6 @@
 import pytube
 import tkinter as tk
+from tkinter import filedialog
 import os
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
@@ -8,7 +9,7 @@ class YoutubeDownloader(tk.Tk):
 	def __init__(self):
 		super().__init__()
 		self.title("Youtube Downloader by Ludz")
-		self.geometry("500x680")
+		self.geometry("500x700")
 
 		self.window_top = tk.Label(text="Download a video!", font=("Comic Sans MS", 30, "bold"))
 		self.window_top.pack(pady=30)
@@ -66,6 +67,20 @@ class YoutubeDownloader(tk.Tk):
 		)
 		self.keywords_button.pack(pady=15)
 
+		self.keywords_button = tk.Button(
+			text="Choose directory",
+			width=15,
+			height=1,
+			font=("Arial", 10),
+			command=self.choose_directory
+		)
+		self.keywords_button.pack(pady=15)
+
+		self.show_directory = tk.Label()
+		self.show_directory.pack()
+
+		self.current_directory = ""
+
 		self.mainloop()
 
 	def download_video(self, url):
@@ -76,7 +91,7 @@ class YoutubeDownloader(tk.Tk):
 		else:
 			video_url = pytube.YouTube(url)
 			video = video_url.streams.get_highest_resolution()
-			video.download(filename=f"{video_url.title}.mp4".replace(":", ""))
+			video.download(filename=f"{video_url.title}.mp4".replace(":", ""), output_path=self.current_directory)
 			self.video_title.config(text=f"Downloading...\n {video.title}", font=("Arial", 13))
 
 	def download_audio(self, url):
@@ -87,7 +102,7 @@ class YoutubeDownloader(tk.Tk):
 		else:
 			video_url = pytube.YouTube(url)
 			audio = video_url.streams.get_audio_only()
-			audio.download(filename=f"{video_url.title}.mp4".replace(":", ""))
+			audio.download(filename=f"{video_url.title}.mp4".replace(":", ""), output_path=self.current_directory)
 			self.video_title.config(text=f"Downloading...\n{audio.title}", font=("Arial", 13))
 
 			return f"{video_url.title}".replace(":", "")
@@ -104,10 +119,16 @@ class YoutubeDownloader(tk.Tk):
 			for keyword in video.keywords:
 				keywords_string += f"{keyword}\n"
 
-			keywords_file = open(f"keywords_{video.title}.txt".replace(":", ""), 'w')
+			path = os.path.join(self.current_directory, f"keywords_{video.title}.txt".replace(":", ""))
+			keywords_file = open(path, 'w')
 			keywords_file.write(keywords_string)
-			os.startfile(f"keywords_{video.title}.txt".replace(":", ""))
+			os.startfile(path)
 
 	def cut_audio(self, url, start, stop):
 		video_title = self.download_audio(url)
-		ffmpeg_extract_subclip(f"{video_title}.mp4", start, stop, targetname=f"cut_{video_title}.mp4")
+		path = os.path.join(self.current_directory, f"{video_title}.mp4")
+		ffmpeg_extract_subclip(f"{self.current_directory}{video_title}.mp4", start, stop, targetname=f"cut_{video_title}.mp4")
+
+	def choose_directory(self):
+		self.current_directory = tk.filedialog.askdirectory()
+		self.show_directory.config(text=self.current_directory)
